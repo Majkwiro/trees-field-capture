@@ -1,0 +1,17 @@
+{
+  "name": "TREES Field Capture",
+  "short_name": "TREES",
+  "description": "Recording plantings, boundaries, survival assessments and nurseries in the field for the Forestry Commission of Zimbabwe. Works with no connection.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#123c20",
+  "theme_color": "#123c20",
+  "lang": "en-ZW",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

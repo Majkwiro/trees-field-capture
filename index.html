@@ -1,0 +1,1678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#123c20">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TREES Field Capture</title>
+<style>
+:root{--green:#1d5b32;--dark:#123c20;--leaf:#7ab86e;--pale:#e8f1ea;--cream:#fbfbf8;
+  --ink:#1c2119;--muted:#5f6b62;--line:#c9d3cc;--red:#8f2317;--amber:#8a5a00;--blue:#2f6fad}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;
+  color:var(--ink);background:var(--cream);padding-bottom:96px}
+header{background:var(--dark);color:#fff;padding:12px 14px;position:sticky;top:0;z-index:20}
+header .t{font-size:19px;font-weight:700;letter-spacing:3px}
+header .s{font-size:11px;opacity:.85;margin-top:2px}
+nav.tabs{display:flex;background:var(--green);position:sticky;top:56px;z-index:19}
+nav.tabs button{flex:1;position:relative;background:none;border:0;color:#fff;
+  padding:15px 2px 10px;font-size:12.5px;line-height:1.2;font-family:inherit;
+  border-bottom:3px solid transparent;white-space:nowrap;letter-spacing:-.2px}
+/* The count sits on the tab rather than inside its label. Written inline as
+   "(2)", "Survival (2)" was wider than a fifth of a telephone screen, so every
+   label wrapped onto two lines and the bar looked broken. */
+nav.tabs button .cnt{position:absolute;top:2px;right:4px;background:var(--leaf);
+  color:var(--dark);font-size:9.5px;font-weight:700;line-height:1;padding:2px 4px;
+  border-radius:8px;min-width:13px}
+nav.tabs button .cnt:empty{display:none}
+@media (max-width:340px){nav.tabs button{font-size:11.5px;padding:15px 1px 10px}}
+nav.tabs button.on{border-bottom-color:var(--leaf);font-weight:700;background:rgba(0,0,0,.15)}
+main{padding:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;
+  margin-bottom:12px}
+h2{font-size:15px;margin:0 0 12px;color:var(--dark);text-transform:uppercase;
+  letter-spacing:.7px}
+h3{font-size:14px;margin:16px 0 8px;color:var(--green)}
+label{display:block;font-size:13px;font-weight:600;color:var(--dark);margin:12px 0 4px}
+label .req{color:var(--red)}
+input,select,textarea{width:100%;padding:12px 10px;font-size:16px;font-family:inherit;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--leaf);border-color:var(--leaf)}
+textarea{min-height:64px}
+small.hint{display:block;font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.row2{display:flex;gap:10px}.row2>div{flex:1}
+.btn{display:block;width:100%;padding:15px;font-size:16px;font-weight:700;
+  font-family:inherit;border:0;border-radius:8px;background:var(--green);color:#fff;
+  margin-top:14px}
+.btn:active{background:var(--dark)}
+.btn.sec{background:#fff;color:var(--green);border:2px solid var(--green)}
+.btn.warn{background:#fff;color:var(--red);border:2px solid var(--red)}
+.btn.sm{padding:10px;font-size:14px;margin-top:8px}
+.btn:disabled{opacity:.45}
+.gps{background:var(--pale);border-radius:8px;padding:12px;margin-top:8px}
+.gpsline{font-size:13px;line-height:1.5;margin-top:8px;color:var(--muted)}
+.gpsline.good{color:var(--green);font-weight:700}
+.gpsline.bad{color:var(--amber);font-weight:700}
+.gpsline.err{color:var(--red);font-weight:700}
+.readout{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px;font-size:13px}
+.readout b{font-family:"Courier New",monospace}
+.newsp{border:1px solid var(--leaf);border-left:4px solid var(--leaf);border-radius:6px;
+  padding:12px 14px;margin:10px 0;background:#f4faf3}
+.newsp .nshead{font-weight:700;color:var(--dark);font-size:14px}
+.newsp .nsnote{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 0}
+.sp .new{display:inline-block;margin-left:6px;background:var(--leaf);color:var(--dark);
+  font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;vertical-align:middle}
+.sp{border:1px solid var(--line);border-left:4px solid var(--leaf);border-radius:6px;
+  padding:10px 12px;margin-bottom:8px;background:#fbfdfb}
+.sp .n{font-weight:700;font-size:14px}
+.sp .d{font-size:12px;color:var(--muted);margin-top:2px}
+.sp .x{float:right;color:var(--red);font-weight:700;padding:2px 8px;font-size:18px}
+.tot{background:var(--dark);color:#fff;border-radius:8px;padding:12px 14px;
+  font-size:15px;font-weight:700;text-align:center;margin-bottom:10px}
+.saved{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:8px;
+  background:#fff}
+.saved .h{font-weight:700;font-size:14px}
+.saved .m{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;
+  background:var(--pale);color:var(--dark);font-weight:700}
+.pill.b{background:#dbe9f5;color:#1d4d78}
+.msg{border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:14px;line-height:1.5}
+.msg.ok{background:#e6f3e9;border:1px solid #a8ceb4;color:#17492a}
+.msg.bad{background:#fbeae7;border:1px solid #e0b0a8;color:var(--red)}
+.msg.info{background:#e9f0f6;border:1px solid #b4c8da;color:#1d4d78}
+.foot{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+  padding:10px 12px;display:flex;gap:8px;z-index:20}
+.foot .btn{margin:0}
+.empty{color:var(--muted);font-style:italic;text-align:center;padding:24px 10px;
+  font-size:14px}
+.hide{display:none !important}
+details{margin-top:10px}
+summary{font-size:13px;color:var(--green);font-weight:700;padding:6px 0}
+details p{font-size:13px;color:var(--muted);line-height:1.55}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="t">TREES</div>
+  <div class="s">Field capture &middot; Forestry Commission of Zimbabwe<br><span id="ver"></span></div>
+</header>
+
+<nav class="tabs">
+  <button id="tabPlant" class="on" onclick="showTab('plant')">Planting</button>
+  <button id="tabBound" onclick="showTab('bound')">Boundary</button>
+  <button id="tabSurv" onclick="showTab('surv')"><span class="lbl">Survival</span><span class="cnt" id="survCount"></span></button>
+  <button id="tabNurs" onclick="showTab('nurs')"><span class="lbl">Nursery</span><span class="cnt" id="nursCount"></span></button>
+  <button id="tabSaved" onclick="showTab('saved')"><span class="lbl">Saved</span><span class="cnt" id="savedCount"></span></button>
+</nav>
+
+<main>
+<div id="msg"></div>
+
+<!-- ============================== PLANTING ============================== -->
+<section id="plant">
+  <div class="card">
+    <h2>The planting</h2>
+
+    <label>Event code <span class="req">*</span></label>
+    <input id="event_code" placeholder="FC/BUH/2026-7/001" autocomplete="off">
+    <small class="hint">From the block your district office issued you. Never reuse a code.</small>
+
+    <label>Event name</label>
+    <input id="event_name" placeholder="National Tree Planting Day at Chapanduka" autocomplete="off">
+    <small class="hint">What the planting is called. May be left blank.</small>
+
+    <label>Site name <span class="req">*</span></label>
+    <input id="site_name" placeholder="Chapanduka Primary School" autocomplete="off">
+
+    <div class="row2">
+      <div>
+        <label>District <span class="req">*</span></label>
+        <select id="district"></select>
+      </div>
+      <div>
+        <label>Ward</label>
+        <input id="ward_number" inputmode="numeric" placeholder="12">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Season <span class="req">*</span></label>
+        <select id="season"></select>
+      </div>
+      <div>
+        <label>Planting date <span class="req">*</span></label>
+        <input id="planting_date" type="date">
+      </div>
+    </div>
+
+    <label>Planting group or institution</label>
+    <input id="group_name" placeholder="Chapanduka School Development Committee" autocomplete="off">
+
+    <label>Supervising officer</label>
+    <input id="officer_name" placeholder="Your name" autocomplete="off">
+    <small class="hint">Remembered for the next planting once entered.</small>
+  </div>
+
+  <div class="card">
+    <h2>How it was planted</h2>
+    <label>Purpose</label>
+    <select id="planting_purpose"></select>
+
+    <label>Spacing <span class="req">*</span></label>
+    <input id="spacing" placeholder="3m x 3m" autocomplete="off">
+    <small class="hint">The area is worked out from this and the number of trees, so it is
+      not entered separately. Write 3m x 3m, or 2.5m x 3m, or 3m for a square spacing.</small>
+    <div id="spacingCalc" class="gpsline"></div>
+
+    <h3>Who took part</h3>
+    <div class="row2">
+      <div><label>Total</label><input id="participants_total" inputmode="numeric"></div>
+      <div><label>Of whom women</label><input id="participants_female" inputmode="numeric"></div>
+    </div>
+    <div class="row2">
+      <div><label>Of whom aged under 35</label><input id="participants_youth" inputmode="numeric"></div>
+      <div><label>Of whom PLWD</label><input id="participants_disability" inputmode="numeric"></div>
+    </div>
+    <small class="hint">PLWD is the number of participants living with a disability.</small>
+  </div>
+
+  <div class="card">
+    <h2>Where it is</h2>
+    <div class="gps">
+      <button class="btn sm" id="gpsBtn" onclick="gpsStart()">Read the position from this phone</button>
+      <button class="btn sm sec hide" id="gpsUse" onclick="gpsUse()">Use this reading</button>
+      <button class="btn sm sec hide" id="gpsStop" onclick="gpsStop()">Stop</button>
+      <div class="gpsline" id="gpsMsg"></div>
+      <div class="readout" id="gpsOut"></div>
+    </div>
+    <details id="pasteWrap">
+      <summary>Paste coordinates from a positioning application</summary>
+      <p>Copy whatever the application shows and paste the whole thing here. Most forms are
+        understood, including <b>-19.30215, 31.75540</b> and <b>19&deg;18.129'S 31&deg;45.324'E</b>
+        and <b>19 18 07.7 S 31 45 19.4 E</b>.</p>
+      <textarea id="pasteBox" placeholder="-19.30215, 31.75540"></textarea>
+      <button class="btn sm sec" onclick="pasteCoords(false)">Read what I pasted</button>
+      <div class="gpsline" id="pasteMsg"></div>
+    </details>
+    <div class="row2">
+      <div><label>Latitude</label><input id="latitude" inputmode="decimal" placeholder="-19.30215"></div>
+      <div><label>Longitude</label><input id="longitude" inputmode="decimal" placeholder="31.75540"></div>
+    </div>
+    <small class="hint">Latitudes in Zimbabwe are negative. The form makes a southern latitude
+      negative for you.</small>
+  </div>
+
+  <div class="card">
+    <h2>The trees planted</h2>
+    <div class="tot" id="treeTotal">No species added yet</div>
+    <div id="spList"></div>
+
+    <h3>Add a species</h3>
+    <label>Species <span class="req">*</span></label>
+    <select id="sp_name" onchange="speciesPicked()"></select>
+
+    <div id="newSpWrap" class="newsp hide">
+      <div class="nshead">A species not on the list</div>
+      <p class="nsnote">Give the botanical name if you know it. Where you do not, write the
+        local name in both boxes and say so in the note: the district office will identify it
+        later. A species added here is marked for review at the office, so a guess does no
+        harm as long as it is recorded as a guess.</p>
+
+      <label>Scientific name <span class="req">*</span></label>
+      <input id="ns_sci" placeholder="Uapaca kirkiana" autocomplete="off">
+
+      <div class="row2">
+        <div><label>Common name</label><input id="ns_common" placeholder="Wild loquat"></div>
+        <div><label>Local name</label><input id="ns_local" placeholder="Muzhanje"></div>
+      </div>
+
+      <div class="row2">
+        <div><label>Origin <span class="req">*</span></label><select id="ns_origin"></select></div>
+        <div><label>Main use</label><select id="ns_category"></select></div>
+      </div>
+
+      <label>Note</label>
+      <input id="ns_note" placeholder="How it was identified, or that the name is uncertain">
+
+      <button class="btn sec sm" onclick="addNewSpecies()">Add it to my list</button>
+      <button class="btn sec sm" onclick="cancelNewSpecies()">Cancel</button>
+      <div class="gpsline" id="ns_msg"></div>
+    </div>
+    <div class="row2">
+      <div><label>Supplied</label><input id="sp_supplied" inputmode="numeric"></div>
+      <div><label>Planted <span class="req">*</span></label><input id="sp_planted" inputmode="numeric"></div>
+    </div>
+    <label>Stock type</label>
+    <select id="sp_stock"></select>
+    <button class="btn sec" onclick="addSpecies()">Add this species</button>
+    <small class="hint">Add one row for each species in the planting. Supplied and planted
+      are recorded separately: the difference is the loss in transport and handling.</small>
+  </div>
+
+  <div class="card">
+    <h2>Notes</h2>
+    <textarea id="notes" placeholder="Water source, protection arranged, anything worth recording"></textarea>
+  </div>
+</section>
+
+<!-- ============================== SURVIVAL ============================== -->
+
+
+<!-- ============================== BOUNDARY ============================== -->
+<section id="bound" class="hide">
+  <div class="card">
+    <div class="msg info">One boundary at a time. Walk clockwise with the forest on your
+      right, taking a point at every change of direction. Each point is saved separately
+      and they are exported as one file for the unit.</div>
+    <label>Forest unit code <span class="req">*</span></label>
+    <input id="bp_unit" placeholder="FMU/BUH/W12/01" autocomplete="off">
+    <label>Captured by</label>
+    <input id="bp_by" placeholder="Your name" autocomplete="off">
+    <div class="tot" id="bpTotal">No points captured</div>
+  </div>
+
+  <div class="card">
+    <h2>Next point</h2>
+    <div class="row2">
+      <div><label>Sequence</label><input id="bp_seq" inputmode="numeric"></div>
+      <div><label>Label</label><input id="bp_label" placeholder="BP1"></div>
+    </div>
+    <div class="gps">
+      <button class="btn sm" id="gpsBtn2" onclick="gpsStart(true)">Read the position from this phone</button>
+      <button class="btn sm sec hide" id="gpsUse2" onclick="gpsUse(true)">Use this reading</button>
+      <button class="btn sm sec hide" id="gpsStop2" onclick="gpsStop()">Stop</button>
+      <div class="gpsline" id="gpsMsg2"></div>
+      <div class="readout" id="gpsOut2"></div>
+    </div>
+    <div class="row2">
+      <div><label>Latitude <span class="req">*</span></label><input id="bp_lat" inputmode="decimal"></div>
+      <div><label>Longitude <span class="req">*</span></label><input id="bp_lon" inputmode="decimal"></div>
+    </div>
+    <details id="pasteWrap2">
+      <summary>Paste coordinates from a positioning application</summary>
+      <p>Copy whatever the application shows and paste it here. Remember to type the accuracy
+        into the box below, because a point without one is refused.</p>
+      <textarea id="pasteBox2" placeholder="-19.30215, 31.75540"></textarea>
+      <button class="btn sm sec" onclick="pasteCoords(true)">Read what I pasted</button>
+      <div class="gpsline" id="pasteMsg2"></div>
+    </details>
+    <div class="row2">
+      <div><label>Altitude m</label><input id="bp_alt" inputmode="numeric"></div>
+      <div><label>Accuracy m <span class="req">*</span></label><input id="bp_acc" inputmode="decimal"></div>
+    </div>
+    <small class="hint" id="accHint"></small>
+    <label>Feature at this point</label>
+    <input id="bp_note" placeholder="Beacon, anthill, fence corner, river confluence">
+    <button class="btn" onclick="addPoint()">Save this point</button>
+  </div>
+
+  <div class="card">
+    <h2>Points captured</h2>
+    <div id="bpList"></div>
+  </div>
+</section>
+
+<!-- ============================== SURVIVAL ============================== -->
+<section id="surv" class="hide">
+  <div class="card">
+    <h2>What is due</h2>
+    <div class="msg info">Before leaving the office, download <b>Survival assessments due and
+      overdue</b> from the registry Reports page as a CSV, and load it here. The phone then
+      knows which plantings are due and you need type nothing to identify them.</div>
+    <label>Load the due list</label>
+    <input type="file" id="dueFile" accept=".csv,text/csv" onchange="loadDue(this)">
+    <div class="gpsline" id="dueMsg"></div>
+    <div class="row2" style="margin-top:10px">
+      <div><label>Filter by district</label><select id="dueDistrict" onchange="renderDue()"></select></div>
+      <div><label>Show</label><select id="dueFilter" onchange="renderDue()">
+        <option value="due">Outstanding only</option>
+        <option value="late">Overdue only</option>
+        <option value="all">Everything on the list</option>
+      </select></div>
+    </div>
+  </div>
+
+  <div class="card" id="dueListCard">
+    <h2>Plantings to assess</h2>
+    <div id="dueList"></div>
+  </div>
+
+  <div class="card hide" id="assessCard">
+    <h2>Recording the assessment</h2>
+    <div class="tot" id="assessWho"></div>
+    <div class="msg info" id="assessDue"></div>
+
+    <label>Assessment date <span class="req">*</span></label>
+    <input id="as_date" type="date">
+
+    <label>Round <span class="req">*</span></label>
+    <select id="as_months">
+      <option value="3">Three month</option>
+      <option value="12">Twelve month</option>
+      <option value="24">Twenty four month</option>
+    </select>
+
+    <label>Trees examined <span class="req">*</span></label>
+    <input id="as_assessed" inputmode="numeric">
+    <small class="hint" id="as_hint">The number you actually counted. Where you counted a
+      sample rather than the whole planting, enter the sample, not the number planted.
+      Survival is worked out on this figure.</small>
+
+    <label>Trees alive <span class="req">*</span></label>
+    <input id="as_alive" inputmode="numeric">
+    <div class="gpsline" id="as_calc"></div>
+
+    <div class="row2">
+      <div><label>Mean height cm</label><input id="as_height" inputmode="numeric"></div>
+      <div><label>Assessed by</label><input id="as_by" placeholder="Your name"></div>
+    </div>
+
+    <label>Main cause of loss</label>
+    <select id="as_cause"></select>
+
+    <label>Notes</label>
+    <textarea id="as_notes" placeholder="Condition of the site, protection, remedial action needed"></textarea>
+
+    <button class="btn" onclick="saveAssessment()">Save this assessment</button>
+    <button class="btn sec" onclick="closeAssess()">Cancel</button>
+  </div>
+
+  <div class="card">
+    <h2>Assessments recorded</h2>
+    <div id="assessList"></div>
+  </div>
+
+  <details style="margin-bottom:14px">
+    <summary>Assessing without the due list</summary>
+    <p>Where the due list could not be brought, an assessment can still be recorded by typing
+      the event code and the species. Press the button below. Both must match the registry
+      exactly or the row will be refused when the file is loaded, which is why the due list
+      is the better way.</p>
+    <button class="btn sec sm" onclick="manualAssess()">Record one by typing it</button>
+  </details>
+</section>
+
+<!-- ============================== NURSERY ============================== -->
+<section id="nurs" class="hide">
+  <div class="card">
+    <h2>Register a nursery</h2>
+    <div class="msg info">A nursery is registered once and then referred to for years. Where a
+      nursery of the same name already exists in that district, loading this file brings it up
+      to date rather than adding it twice, so it is safe to record one you are unsure about.</div>
+
+    <label>Nursery name <span class="req">*</span></label>
+    <input id="nu_name" placeholder="Murambinda Community Nursery" autocomplete="off">
+
+    <label>Nursery type</label>
+    <select id="nu_type"></select>
+
+    <div class="row2">
+      <div><label>District <span class="req">*</span></label><select id="nu_district"></select></div>
+      <div><label>Ward</label><input id="nu_ward" inputmode="numeric" placeholder="12"></div>
+    </div>
+
+    <label>Operator or managing body</label>
+    <input id="nu_operator" placeholder="Murambinda Ward Committee" autocomplete="off">
+
+    <div class="row2">
+      <div><label>Annual capacity</label><input id="nu_capacity" inputmode="numeric" placeholder="60000"></div>
+      <div><label>Contact person</label><input id="nu_contact" autocomplete="off"></div>
+    </div>
+
+    <label>Mobile number</label>
+    <input id="nu_phone" inputmode="tel" autocomplete="off">
+  </div>
+
+  <div class="card">
+    <h2>Where it is</h2>
+    <div class="gps">
+      <button class="btn sm" id="gpsBtn3" onclick="gpsStart('nurs')">Read the position from this phone</button>
+      <button class="btn sm sec hide" id="gpsUse3" onclick="gpsUse('nurs')">Use this reading</button>
+      <button class="btn sm sec hide" id="gpsStop3" onclick="gpsStop()">Stop</button>
+      <div class="gpsline" id="gpsMsg3"></div>
+      <div class="readout" id="gpsOut3"></div>
+    </div>
+    <details id="pasteWrap3">
+      <summary>Paste coordinates from a positioning application</summary>
+      <textarea id="pasteBox3" placeholder="-19.27880, 31.66410"></textarea>
+      <button class="btn sm sec" onclick="pasteCoords('nurs')">Read what I pasted</button>
+      <div class="gpsline" id="pasteMsg3"></div>
+    </details>
+    <div class="row2">
+      <div><label>Latitude</label><input id="nu_lat" inputmode="decimal" placeholder="-19.27880"></div>
+      <div><label>Longitude</label><input id="nu_lon" inputmode="decimal" placeholder="31.66410"></div>
+    </div>
+    <label>Accuracy m</label>
+    <input id="nu_acc" inputmode="decimal">
+    <small class="hint">Required where coordinates are given. Must meet the standard.</small>
+
+    <label>Notes</label>
+    <textarea id="nu_notes" placeholder="Water source, shade, fencing, seasons operating"></textarea>
+
+    <button class="btn" onclick="saveNursery()">Save this nursery</button>
+  </div>
+
+  <div class="card">
+    <h2>Nurseries held on this phone</h2>
+    <div id="nursList"></div>
+  </div>
+</section>
+
+<!-- ============================== SAVED ============================== -->
+<section id="saved" class="hide">
+  <div class="card">
+    <h2>Plantings held on this phone</h2>
+    <div id="savedList"></div>
+    <button class="btn" onclick="exportPlant()">Download the planting CSV</button>
+    <button class="btn sec" onclick="shareFile('plant')">Share the planting CSV</button>
+  </div>
+  <div class="card">
+    <h2>Survival assessments held on this phone</h2>
+    <div id="savedAss"></div>
+    <button class="btn" onclick="exportAssess()">Download the assessment CSV</button>
+    <button class="btn sec" onclick="shareFile('assess')">Share the assessment CSV</button>
+  </div>
+  <div class="card">
+    <h2>Boundary points held on this phone</h2>
+    <div id="savedPts"></div>
+    <button class="btn" onclick="exportPoints()">Download the boundary CSV</button>
+    <button class="btn sec" onclick="shareFile('point')">Share the boundary CSV</button>
+  </div>
+  <div class="card">
+    <h2>Nurseries held on this phone</h2>
+    <div id="savedNurs"></div>
+    <button class="btn" onclick="exportNursery()">Download the nursery CSV</button>
+    <button class="btn sec" onclick="shareFile('nursery')">Share the nursery CSV</button>
+  </div>
+  <div class="card">
+    <h2>Housekeeping</h2>
+    <div class="msg info">Nothing on this phone reaches the registry until the file has been
+      loaded on the Field data page. Export first, confirm it loaded, and only then clear.</div>
+    <button class="btn warn" onclick="clearAll()">Clear everything from this phone</button>
+    <details>
+      <summary>Where is my work kept?</summary>
+      <p>In this browser on this phone. It survives closing the browser and switching the
+        phone off. It is lost if the browser data is cleared, if the phone is reset, or if
+        the file is opened in a different browser. Export at the end of every day.</p>
+    </details>
+  </div>
+</section>
+</main>
+
+<div class="foot">
+  <button class="btn" onclick="saveEvent()">Save this planting</button>
+  <button class="btn sec" style="flex:0 0 40%" onclick="showTab('saved')">Saved</button>
+</div>
+
+<script>
+var CFG = {"headers":["event_code","event_name","site_name","district","ward_number","season","group_name","officer_name","planting_date","planting_purpose","spacing","area_planted_ha","participants_total","participants_female","participants_youth","participants_disability","latitude","longitude","species_scientific_name","species_common_name","species_local_name","species_origin","species_category","seedlings_supplied","seedlings_planted","stock_type","notes"],"pointHeaders":["point_seq","point_label","latitude","longitude","altitude_m","gps_accuracy_m","feature_note","captured_on","captured_by"],"assessHeaders":["event_code","species_scientific_name","assessment_date","months_after_planting","trees_assessed","trees_alive","mean_height_cm","main_mortality_cause","assessed_by","notes"],"mortality":["Drought or moisture stress","Livestock browsing","Wild animal damage","Termites","Fire","Poor planting technique","Waterlogging","Weed competition","Theft or vandalism","Pests and diseases","Late planting","Unknown"],"nurseryHeaders":["name","nursery_type","district","ward_number","operator","latitude","longitude","gps_accuracy_m","annual_capacity","contact_person","phone","notes"],"nurseryTypes":["Forestry Commission","Community","School","Private","Non-governmental organisation","Rural District Council","Institutional"],"speciesOrigin":["Indigenous","Exotic"],"speciesCategory":["Timber","Fruit","Fuelwood","Agroforestry","Medicinal","Ornamental","Fodder"],"species":[["Adansonia digitata","Baobab","Indigenous"],["Afzelia quanzensis","Pod mahogany","Indigenous"],["Albizia amara","Bitter albizia","Indigenous"],["Azanza garckeana","Snot apple","Indigenous"],["Baikiaea plurijuga","Zambezi teak","Indigenous"],["Brachystegia spiciformis","Msasa","Indigenous"],["Cajanus cajan","Pigeon pea","Exotic"],["Carica papaya","Pawpaw","Exotic"],["Citrus limon","Lemon","Exotic"],["Citrus sinensis","Sweet orange","Exotic"],["Colophospermum mopane","Mopane","Indigenous"],["Combretum imberbe","Leadwood","Indigenous"],["Diospyros mespiliformis","Jackalberry","Indigenous"],["Erythrina abyssinica","Lucky bean tree","Indigenous"],["Eucalyptus camaldulensis","River red gum","Exotic"],["Eucalyptus cloeziana","Gympie messmate","Exotic"],["Eucalyptus grandis","Rose gum","Exotic"],["Eucalyptus grandis x camaldulensis","GxC hybrid","Exotic"],["Eucalyptus grandis x tereticornis","GxT hybrid","Exotic"],["Eucalyptus tereticornis","Forest red gum","Exotic"],["Faidherbia albida","Apple-ring acacia","Indigenous"],["Ficus sycomorus","Sycamore fig","Indigenous"],["Gliricidia sepium","Gliricidia","Exotic"],["Gmelina arborea","Gmelina","Exotic"],["Grevillea robusta","Silky oak","Exotic"],["Julbernardia globiflora","Munondo","Indigenous"],["Khaya anthotheca","Red mahogany","Indigenous"],["Kigelia africana","Sausage tree","Indigenous"],["Leucaena leucocephala","Leucaena","Exotic"],["Macadamia integrifolia","Macadamia","Exotic"],["Mangifera indica","Mango","Exotic"],["Moringa oleifera","Moringa","Exotic"],["Parinari curatellifolia","Mobola plum","Indigenous"],["Persea americana","Avocado","Exotic"],["Pinus elliottii","Slash pine","Exotic"],["Pinus patula","Patula pine","Exotic"],["Pinus taeda","Loblolly pine","Exotic"],["Psidium guajava","Guava","Exotic"],["Pterocarpus angolensis","Mukwa / Bloodwood","Indigenous"],["Sclerocarya birrea","Marula","Indigenous"],["Senegalia polyacantha","White thorn","Indigenous"],["Senna spectabilis","Cassia","Exotic"],["Strychnos cocculoides","Monkey orange","Indigenous"],["Syzygium cordatum","Waterberry","Indigenous"],["Tephrosia vogelii","Fish bean","Exotic"],["Terminalia sericea","Silver cluster leaf","Indigenous"],["Trichilia emetica","Natal mahogany","Indigenous"],["Uapaca kirkiana","Wild loquat","Indigenous"],["Vachellia karroo","Sweet thorn","Indigenous"],["Vachellia sieberiana","Paperbark thorn","Indigenous"],["Ziziphus mauritiana","Indian jujube","Indigenous"]],"districts":["Beitbridge","Bikita","Bindura","Binga","Bubi","Buhera","Bulawayo","Bulilima","Chegutu","Chikomba","Chimanimani","Chipinge","Chiredzi","Chirumhanzu","Chivi","Gokwe North","Gokwe South","Goromonzi","Guruve","Gutu","Gwanda","Gweru","Harare","Hurungwe","Hwange","Hwedza","Insiza","Kariba","Kwekwe","Lupane","Makonde","Makoni","Mangwe","Marondera","Masvingo","Matobo","Mazowe","Mberengwa","Mbire","Mhondoro-Ngezi","Mount Darwin","Mudzi","Murehwa","Mutare","Mutasa","Mutoko","Muzarabani","Mwenezi","Nkayi","Nyanga","Rushinga","Sanyati","Seke","Shamva","Shurugwi","Tsholotsho","Umguza","Umzingwane","Uzumba Maramba Pfungwe","Zaka","Zvimba","Zvishavane"],"purposes":["Woodlot","Fruit orchard","Boundary planting","Riverbank protection","Gully reclamation","Agroforestry","Enrichment planting","Amenity or shade","Fodder bank","Windbreak"],"methods":["Pitting","Ripped lines","Ploughed lines","Direct sowing","Micro-catchment pits","Trench planting"],"stock":["Containerised","Bare root","Rooted cutting","Wildling","Direct seed"],"groups":["School","Community group","Household","Church group","Youth group","Women's group","Institution","Rural District Council","Private grower","Other"],"seasons":["2024/5","2025/6","2026/7","2027/8"],"causes":["Drought or moisture stress","Livestock browsing","Wild animal damage","Termites","Fire","Poor planting technique","Waterlogging","Weed competition","Theft or vandalism","Pests and diseases","Late planting","Unknown"],"limit":5.0,"version":"5.6","versionDate":"8 November 2026"};
+var K = "trees.capture.v1";
+var store = { events: [], points: [], last: {} };
+var species = [];
+var gps = { watch:null, best:null, count:0, t0:0, forPoint:false };
+
+/* ------------------------------------------------------------------ store */
+function load(){
+  try { var raw = localStorage.getItem(K); if (raw) store = JSON.parse(raw); }
+  catch(e){ }
+  if (!store.events) store.events = [];
+  if (!store.points) store.points = [];
+  if (!store.assess) store.assess = [];
+  if (!store.due) store.due = [];
+  if (!store.nurseries) store.nurseries = [];
+  if (!store.species) store.species = [];
+  if (!store.assess) store.assess = [];
+  if (!store.last) store.last = {};
+}
+function save(){
+  try { localStorage.setItem(K, JSON.stringify(store)); }
+  catch(e){ msg("bad", "This phone would not store the entry. Export what you have now, "
+    + "because further entries may be lost."); }
+}
+function msg(kind, text){
+  var m = document.getElementById("msg");
+  m.innerHTML = '<div class="msg ' + kind + '">' + text + '</div>';
+  window.scrollTo(0,0);
+  if (kind === "ok") setTimeout(function(){ m.innerHTML = ""; }, 6000);
+}
+function val(id){ var e = document.getElementById(id); return e ? e.value.trim() : ""; }
+function set(id, v){ var e = document.getElementById(id); if (e) e.value = v == null ? "" : v; }
+
+/* ------------------------------------------------------------------ setup */
+function fill(id, list, blank){
+  var s = document.getElementById(id);
+  s.innerHTML = "";
+  if (blank) s.appendChild(new Option(blank, ""));
+  list.forEach(function(v){ s.appendChild(new Option(v, v)); });
+}
+function init(){
+  load();
+  var vEl = document.getElementById("ver");
+  if (vEl) vEl.textContent = "version " + CFG.version + " of " + CFG.versionDate;
+  fill("district", CFG.districts, "-- choose --");
+  fill("season", CFG.seasons, "");
+  fill("planting_purpose", CFG.purposes, "-- choose --");
+  fill("sp_stock", CFG.stock, "-- choose --");
+  fill("as_cause", CFG.mortality, "-- choose --");
+  fill("nu_type", CFG.nurseryTypes, "-- choose --");
+  fill("nu_district", CFG.districts, "-- choose --");
+  if (store.last.nu_district) set("nu_district", store.last.nu_district);
+  fill("ns_origin", CFG.speciesOrigin, "-- choose --");
+  fill("ns_category", CFG.speciesCategory, "-- choose --");
+  fillSpecies();
+  document.getElementById("season").value = CFG.seasons[CFG.seasons.length - 2] || "";
+  document.getElementById("planting_date").value = new Date().toISOString().slice(0,10);
+  document.getElementById("accHint").textContent =
+    "Must be " + CFG.limit + " m or better. The registry refuses a point above that.";
+  // carry forward what rarely changes
+  ["district","ward_number","season","officer_name","site_name","group_name"].forEach(function(k){
+    if (store.last[k]) set(k, store.last[k]);
+  });
+  if (store.last.bp_by) set("bp_by", store.last.bp_by);
+  if (!canReadPosition()){
+    if (location.protocol === "content:"){
+      msg("bad", "<b>This form was opened from the Downloads list, and your work is at risk "
+        + "here.</b> Chrome gives a downloaded file a temporary address, and entries saved "
+        + "against it can disappear when that address changes. Move the file into "
+        + "<b>Documents</b> with the Files application, open it from there once, then use "
+        + "Chrome's menu and <b>Add to Home screen</b>. Open it only from that icon from then "
+        + "on. Positions are typed rather than read either way.");
+      ["gpsBtn","gpsBtn2","gpsBtn3"].forEach(function(id){
+        var b2 = document.getElementById(id); if (b2) b2.classList.add("hide");
+      });
+      ["pasteWrap","pasteWrap2","pasteWrap3"].forEach(function(id){
+        var w2 = document.getElementById(id); if (w2) w2.open = true;
+      });
+      return;
+    }
+    msg("info", "<b>Positions are typed on this phone, not read.</b> " + whyNoPosition()
+      + " Everything else in the form works normally. Read the coordinates in any "
+      + "positioning application and paste them into the box under <b>Where it is</b>. "
+      + "The read button is hidden because it cannot work here.");
+    ["gpsBtn","gpsBtn2","gpsBtn3"].forEach(function(id){
+      var b = document.getElementById(id); if (b) b.classList.add("hide");
+    });
+    ["pasteWrap","pasteWrap2","pasteWrap3"].forEach(function(id){
+      var w = document.getElementById(id); if (w) w.open = true;
+    });
+  }
+  fill("as_cause", CFG.mortality, "-- choose --");
+  fill("nu_type", CFG.nurseryTypes, "-- choose --");
+  fill("nu_district", CFG.districts, "-- choose --");
+  if (store.last.nu_district) set("nu_district", store.last.nu_district);
+  fillDueDistricts();
+  document.getElementById("as_assessed").addEventListener("input", survCalc);
+  document.getElementById("as_alive").addEventListener("input", survCalc);
+  document.getElementById("spacing").addEventListener("input", spacingCalc);
+  document.getElementById("sp_planted").addEventListener("input", spacingCalc);
+  render();
+}
+
+/* ------------------------------------------------------ spacing and area */
+function parseSpacing(t){
+  if (!t) return null;
+  var s = String(t).toLowerCase().replace(/[×*]/g,"x").replace(/\bby\b/g,"x")
+          .replace(/,/g,".").replace(/[^0-9.x]/g," ");
+  var parts = s.split("x").map(function(q){ return q.trim(); }).filter(Boolean);
+  var nums = [], bad = false;
+  parts.forEach(function(q){
+    var keep = q.replace(/[^0-9.]/g,"");
+    var v = parseFloat(keep);
+    if (isNaN(v)) return;
+    if (v > 0 && v <= 60) nums.push(v); else bad = true;
+  });
+  if (bad || !nums.length) return null;
+  return nums.length === 1 ? nums[0]*nums[0] : nums[0]*nums[1];
+}
+function spacingCalc(){
+  var m2 = parseSpacing(val("spacing"));
+  var el = document.getElementById("spacingCalc");
+  if (!m2){ el.className = "gpsline"; el.textContent = ""; return; }
+  var sph = Math.round(10000/m2);
+  var n = treeTotal();
+  var txt = m2.toFixed(1) + " m\u00b2 per tree, " + sph.toLocaleString() + " stems per hectare";
+  if (n) txt += ".  " + n.toLocaleString() + " trees will compute to "
+    + (n*m2/10000).toFixed(4) + " hectares.";
+  el.className = "gpsline good";
+  el.textContent = txt;
+}
+
+/* ------------------------------------------------------------------- GPS */
+/* Chrome reports a page opened from a file as a secure context, yet still refuses
+   it a position. So the protocol is tested directly rather than relying on
+   isSecureContext, which would say all is well and leave the officer with a
+   message about permissions that no permission can fix. */
+function canReadPosition(){
+  /* Only a page served over http or https is ever given a position. A page
+     opened from a file on the telephone is not, and neither is one opened from
+     the Downloads list, which Chrome hands over as a content:// address and
+     which reports itself as a secure context even though it is refused a
+     position. Testing isSecureContext alone therefore let the button appear and
+     produced a message about permissions that no permission could fix. */
+  if (!navigator.geolocation) return false;
+  var proto = location.protocol;
+  if (proto !== "http:" && proto !== "https:") return false;
+  return window.isSecureContext === true || location.hostname === "localhost"
+         || location.hostname === "127.0.0.1";
+}
+function whyNoPosition(){
+  if (!navigator.geolocation)
+    return "This browser cannot read a position at all.";
+  if (location.protocol === "content:")
+    return "The form was opened from the Downloads list, which Chrome treats as a temporary "
+      + "address. It refuses a position to such a page whatever the permissions say. This "
+      + "address is also a poor place to keep your work, so see the note below.";
+  if (location.protocol === "file:")
+    return "The form was opened from a file on the phone. Chrome refuses a position to a "
+      + "page opened that way, whatever the permissions say, and no setting on the phone "
+      + "changes it.";
+  return "The address this form was opened from is not one the browser will give a "
+    + "position to.";
+}
+
+function gpsEls(p){
+  if (p === "nurs") return {b:"gpsBtn3",u:"gpsUse3",s:"gpsStop3",m:"gpsMsg3",o:"gpsOut3"};
+  return p ? {b:"gpsBtn2",u:"gpsUse2",s:"gpsStop2",m:"gpsMsg2",o:"gpsOut2"}
+           : {b:"gpsBtn",u:"gpsUse",s:"gpsStop",m:"gpsMsg",o:"gpsOut"};
+}
+function gpsStart(forPoint){
+  var e = gpsEls(forPoint);
+  gps.forPoint = !!forPoint; gps.best = null; gps.count = 0; gps.t0 = Date.now();
+  var m = document.getElementById(e.m);
+  if (!canReadPosition()){
+    m.className = "gpsline err";
+    m.innerHTML = "<b>This phone will not give the form a position.</b><br>"
+      + whyNoPosition()
+      + "<br><br>Read the coordinates in any positioning application and paste them into "
+      + "the box below. Nothing else in the form is affected.";
+    var pw0 = document.getElementById(gps.forPoint ? "pasteWrap2" : "pasteWrap");
+    if (pw0) pw0.open = true;
+    return;
+  }
+  if (!navigator.geolocation){
+    m.className = "gpsline err";
+    m.textContent = "This browser cannot read a position at all. Use the paste box below.";
+    return;
+  }
+  // Chrome refuses a position to a page opened from a file, and refuses it as a
+  // permission denial without ever asking. Saying so plainly is better than
+  // telling the officer to allow something no prompt will offer.
+  if (!canReadPosition()){
+    m.className = "gpsline err";
+    m.innerHTML = "<b>This phone will not give a position to the form as it is opened.</b><br>"
+      + "That is a rule of the browser, not a fault and not a permission you can grant. "
+      + "The form was opened from a file, and Chrome only gives a position to a page "
+      + "opened from a proper address.<br><br>"
+      + "Use the paste box below. Open any positioning application, read the latitude, "
+      + "longitude and accuracy, and paste or type them here. Section 6 of the "
+      + "instructions sets out the two ways to make the button work.";
+    document.getElementById(e.b).textContent = "Read the position from this phone";
+    var pb = document.getElementById(forPoint ? "pasteWrap2" : "pasteWrap");
+    if (pb) pb.open = true;
+    return;
+  }
+  document.getElementById(e.b).classList.add("hide");
+  document.getElementById(e.u).classList.remove("hide");
+  document.getElementById(e.s).classList.remove("hide");
+  m.className = "gpsline";
+  m.textContent = "Waiting for the satellites. Go outside, hold the phone still with a view "
+    + "of the sky. This can take a minute.";
+  gps.watch = navigator.geolocation.watchPosition(function(pos){
+    gps.count++;
+    if (!gps.best || pos.coords.accuracy < gps.best.coords.accuracy) gps.best = pos;
+    gpsRender();
+  }, function(err){
+    m.className = "gpsline err";
+    if (err.code === 1){
+      m.innerHTML = "<b>The position was refused.</b><br>"
+        + "Check three things in this order. Location switched on for the phone itself. "
+        + "Location allowed for Chrome in the phone's application permissions. Location "
+        + "allowed for this page, by tapping the icon beside the address.<br><br>"
+        + "Where all three are right and it still refuses, use the paste box below.";
+    } else if (err.code === 2){
+      m.textContent = "The phone has location switched on but cannot fix a position. Go "
+        + "outside, away from buildings, and try again. Under closed canopy it may not "
+        + "manage it at all, in which case use a handheld receiver and the paste box.";
+    } else {
+      m.textContent = "No position yet after 45 seconds. Move into the open and try again, "
+        + "or use the paste box below.";
+    }
+    var pw = document.getElementById(gps.forPoint ? "pasteWrap2" : "pasteWrap");
+    if (pw) pw.open = true;
+    gpsStop();
+  }, { enableHighAccuracy:true, maximumAge:0, timeout:45000 });
+}
+function gpsRender(){
+  var e = gpsEls(gps.forPoint);
+  if (!gps.best) return;
+  var c = gps.best.coords, ok = c.accuracy <= CFG.limit;
+  document.getElementById(e.o).innerHTML =
+    "<span>Lat <b>" + c.latitude.toFixed(5) + "</b></span>" +
+    "<span>Lon <b>" + c.longitude.toFixed(5) + "</b></span>" +
+    "<span>Accuracy <b>" + c.accuracy.toFixed(1) + " m</b></span>" +
+    (c.altitude != null ? "<span>Alt <b>" + Math.round(c.altitude) + " m</b></span>" : "") +
+    "<span>Readings <b>" + gps.count + "</b></span>";
+  var m = document.getElementById(e.m);
+  if (ok){
+    m.className = "gpsline good";
+    m.textContent = "Accuracy is within " + CFG.limit + " m. Press Use this reading.";
+    document.getElementById(e.u).disabled = false;
+  } else {
+    m.className = "gpsline bad";
+    m.textContent = "Best so far " + c.accuracy.toFixed(1) + " m, and " + CFG.limit
+      + " m or better is required. Keep waiting, " + Math.round((Date.now()-gps.t0)/1000)
+      + " seconds so far.";
+    document.getElementById(e.u).disabled = true;
+  }
+}
+function gpsStop(){
+  var e = gpsEls(gps.forPoint);
+  if (gps.watch !== null) navigator.geolocation.clearWatch(gps.watch);
+  gps.watch = null;
+  document.getElementById(e.b).classList.remove("hide");
+  document.getElementById(e.b).textContent = "Read the position again";
+  document.getElementById(e.s).classList.add("hide");
+}
+function gpsUse(forPoint){
+  if (!gps.best) return;
+  var c = gps.best.coords;
+  if (c.accuracy > CFG.limit){
+    msg("bad", "That reading is " + c.accuracy.toFixed(1) + " m and the standard is "
+      + CFG.limit + " m. It has not been used.");
+    return;
+  }
+  if (forPoint === "nurs"){
+    set("nu_lat", c.latitude.toFixed(5));
+    set("nu_lon", c.longitude.toFixed(5));
+    set("nu_acc", c.accuracy.toFixed(1));
+  } else if (forPoint){
+    set("bp_lat", c.latitude.toFixed(5));
+    set("bp_lon", c.longitude.toFixed(5));
+    set("bp_acc", c.accuracy.toFixed(1));
+    if (c.altitude != null) set("bp_alt", Math.round(c.altitude));
+  } else {
+    set("latitude", c.latitude.toFixed(5));
+    set("longitude", c.longitude.toFixed(5));
+  }
+  gpsStop();
+  var e = gpsEls(forPoint);
+  document.getElementById(e.m).className = "gpsline good";
+  document.getElementById(e.m).textContent = "Entered at " + c.accuracy.toFixed(1) + " m.";
+  document.getElementById(e.u).classList.add("hide");
+}
+
+/* ------------------------------------------------------ pasted coordinates */
+/* Reads whatever a positioning application shows. Decimal degrees, degrees and
+   decimal minutes, or degrees minutes seconds, with the hemisphere given by a
+   letter or by a sign. Zimbabwe lies south and east, so a bare pair is taken as
+   latitude first and made negative. */
+function parseCoordPair(text){
+  if (!text) return null;
+  var s = " " + String(text).toUpperCase()
+      .replace(/[\u00B0\u00BA\u02DA]/g, " ")
+      .replace(/['\u2032\u2019]/g, " ")
+      .replace(/["\u2033\u201D]/g, " ")
+      .replace(/LAT(ITUDE)?|LON(GITUDE)?|LNG/g, " ")
+      .replace(/[,;|]/g, " ")
+      .replace(/\s+/g, " ") + " ";
+  var toks = s.trim().split(" ").filter(Boolean);
+  var groups = [], cur = { nums: [], hemi: null };
+  toks.forEach(function(tk){
+    if (/^[NSEW]$/.test(tk)){
+      cur.hemi = tk;
+      groups.push(cur); cur = { nums: [], hemi: null };
+      return;
+    }
+    var m = tk.match(/^([+-]?)(\d+(?:\.\d+)?)([NSEW]?)$/);
+    if (!m) return;
+    var v = parseFloat(m[2]);
+    if (isNaN(v)) return;
+    if (m[1] === "-") v = -v;
+    cur.nums.push(v);
+    if (m[3]){
+      cur.hemi = m[3];
+      groups.push(cur); cur = { nums: [], hemi: null };
+    }
+  });
+  if (cur.nums.length) groups.push(cur);
+  groups = groups.filter(function(g){ return g.nums.length; });
+  if (groups.length < 2){
+    // one run of numbers: two decimal degrees, or two triples
+    var all = groups.length ? groups[0].nums : [];
+    if (all.length === 2) groups = [{nums:[all[0]],hemi:null},{nums:[all[1]],hemi:null}];
+    else if (all.length === 4) groups = [{nums:all.slice(0,2),hemi:null},{nums:all.slice(2),hemi:null}];
+    else if (all.length === 6) groups = [{nums:all.slice(0,3),hemi:null},{nums:all.slice(3),hemi:null}];
+    else return null;
+  }
+  function dd(g){
+    var n = g.nums, v;
+    if (!n.length) return null;
+    var sign = n[0] < 0 ? -1 : 1;
+    var a = Math.abs(n[0]);
+    if (n.length === 1) v = a;
+    else if (n.length === 2) v = a + Math.abs(n[1])/60;
+    else v = a + Math.abs(n[1])/60 + Math.abs(n[2])/3600;
+    v = v * sign;
+    if (g.hemi === "S" || g.hemi === "W") v = -Math.abs(v);
+    if (g.hemi === "N" || g.hemi === "E") v = Math.abs(v);
+    return v;
+  }
+  var a = groups[0], b = groups[1];
+  var va = dd(a), vb = dd(b);
+  if (va === null || vb === null) return null;
+  // put them the right way round where the letters say so
+  var lat = va, lon = vb;
+  if (a.hemi === "E" || a.hemi === "W" || b.hemi === "N" || b.hemi === "S"){
+    lat = vb; lon = va;
+  }
+  if (!a.hemi && !b.hemi){
+    if (lat > 0) lat = -lat;          // Zimbabwe is south
+    if (lon < 0) lon = -lon;          // and east
+  }
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  if (lat > -15 || lat < -23 || lon < 25 || lon > 34){
+    return { lat: lat, lon: lon, outside: true };
+  }
+  return { lat: lat, lon: lon, outside: false };
+}
+function pasteCoords(forPoint){
+  var suffix = forPoint === "nurs" ? "3" : (forPoint ? "2" : "");
+  var box = document.getElementById("pasteBox" + suffix);
+  var out = document.getElementById("pasteMsg" + suffix);
+  var r = parseCoordPair(box.value);
+  if (!r){
+    out.className = "gpsline err";
+    out.textContent = "That could not be read as a pair of coordinates. Paste both the "
+      + "latitude and the longitude, or type them into the two boxes below.";
+    return;
+  }
+  if (forPoint === "nurs"){
+    set("nu_lat", r.lat.toFixed(5)); set("nu_lon", r.lon.toFixed(5));
+  } else if (forPoint){
+    set("bp_lat", r.lat.toFixed(5)); set("bp_lon", r.lon.toFixed(5));
+  } else {
+    set("latitude", r.lat.toFixed(5)); set("longitude", r.lon.toFixed(5));
+  }
+  if (r.outside){
+    out.className = "gpsline bad";
+    out.textContent = "Read as " + r.lat.toFixed(5) + ", " + r.lon.toFixed(5)
+      + ". That lies outside Zimbabwe, so check it before saving. A common cause is the "
+      + "latitude and longitude the wrong way round.";
+  } else {
+    out.className = "gpsline good";
+    out.textContent = "Read as " + r.lat.toFixed(5) + ", " + r.lon.toFixed(5) + ".";
+  }
+}
+
+/* ----------------------------------------------------- a species not listed
+   The controlled list holds fifty one species and the field holds more. An
+   officer who meets one that is not there had nothing to select, so the
+   planting could not be recorded at all.
+
+   A species added here is kept on this telephone, appears in the picker from
+   then on, and travels in the planting file with whatever the officer could say
+   about it. At the office it arrives marked for review rather than trusted,
+   because a name typed in a field is a name nobody has checked. */
+function allSpecies(){
+  var out = CFG.species.map(function(r){
+    return { sci: r[0], common: r[1], origin: r[2], own: false };
+  });
+  (store.species || []).forEach(function(s){
+    var dup = out.some(function(x){
+      return x.sci.toLowerCase() === s.scientific_name.toLowerCase(); });
+    if (!dup) out.push({ sci: s.scientific_name, common: s.common_name,
+                         origin: s.origin, own: true });
+  });
+  out.sort(function(a, b){ return a.sci.localeCompare(b.sci); });
+  return out;
+}
+function fillSpecies(keep){
+  var s = document.getElementById("sp_name");
+  if (!s) return;
+  var want = keep === undefined ? s.value : keep;
+  s.innerHTML = "";
+  s.appendChild(new Option("-- choose --", ""));
+  allSpecies().forEach(function(r){
+    var label = r.sci + (r.common ? "  (" + r.common + ")" : "")
+              + (r.origin ? "  " + r.origin : "")
+              + (r.own ? "  \u2022 added here" : "");
+    s.appendChild(new Option(label, r.sci));
+  });
+  s.appendChild(new Option("\u2795  The species I need is not on this list", "__new__"));
+  if (want) s.value = want;
+}
+function speciesPicked(){
+  var wrap = document.getElementById("newSpWrap");
+  if (val("sp_name") === "__new__"){
+    wrap.classList.remove("hide");
+    document.getElementById("ns_sci").focus();
+  } else {
+    wrap.classList.add("hide");
+  }
+}
+function cancelNewSpecies(){
+  ["ns_sci","ns_common","ns_local","ns_note"].forEach(function(k){ set(k,""); });
+  set("ns_origin",""); set("ns_category","");
+  document.getElementById("ns_msg").textContent = "";
+  document.getElementById("newSpWrap").classList.add("hide");
+  set("sp_name","");
+}
+function addNewSpecies(){
+  var sci = val("ns_sci").trim();
+  var origin = val("ns_origin");
+  var m = document.getElementById("ns_msg");
+  if (!sci){
+    m.className = "gpsline err";
+    m.textContent = "Enter a name. Where the botanical name is unknown, write the local "
+      + "name here as well and say so in the note.";
+    return;
+  }
+  if (!origin){
+    m.className = "gpsline err";
+    m.textContent = "Say whether it is indigenous or exotic. This is the one thing the "
+      + "office cannot work out afterwards from the name alone, and the figure it feeds "
+      + "is reported against the biodiversity commitments.";
+    return;
+  }
+  var clash = allSpecies().filter(function(x){
+    return x.sci.toLowerCase() === sci.toLowerCase(); })[0];
+  if (clash){
+    m.className = "gpsline bad";
+    m.textContent = "That species is already on the list. It has been selected for you.";
+    fillSpecies(clash.sci);
+    document.getElementById("newSpWrap").classList.add("hide");
+    return;
+  }
+  // A near miss is almost always a misspelling of something already there, and a
+  // misspelling is how one species becomes two with no origin on the second.
+  var near = allSpecies().filter(function(x){
+    var a = x.sci.toLowerCase(), c = sci.toLowerCase();
+    return a !== c && (a.indexOf(c) === 0 || c.indexOf(a) === 0
+            || a.split(" ")[0] === c.split(" ")[0]);
+  }).slice(0, 3);
+  if (near.length && !store.lastNearWarn){
+    store.lastNearWarn = sci;
+    m.className = "gpsline bad";
+    m.innerHTML = "<b>Already on the list, very close to this:</b><br>"
+      + near.map(function(x){ return x.sci; }).join("<br>")
+      + "<br><br>Check the spelling. If yours really is different, press "
+      + "<b>Add it to my list</b> again.";
+    return;
+  }
+  store.lastNearWarn = null;
+  store.species = store.species || [];
+  store.species.push({
+    scientific_name: sci,
+    common_name: val("ns_common").trim(),
+    local_name: val("ns_local").trim(),
+    origin: origin,
+    category: val("ns_category"),
+    note: val("ns_note").trim(),
+    added: new Date().toISOString().slice(0,10)
+  });
+  save();
+  fillSpecies(sci);
+  document.getElementById("newSpWrap").classList.add("hide");
+  ["ns_sci","ns_common","ns_local","ns_note"].forEach(function(k){ set(k,""); });
+  set("ns_origin",""); set("ns_category","");
+  m.textContent = "";
+  msg("ok", sci + " added to this telephone and selected. It travels with the planting "
+    + "file and is marked for review at the office.");
+}
+function speciesDetail(sci){
+  return (store.species || []).filter(function(s){
+    return s.scientific_name.toLowerCase() === (sci || "").toLowerCase(); })[0] || null;
+}
+
+/* --------------------------------------------------------------- species */
+function treeTotal(){
+  return species.reduce(function(a,s){ return a + (parseInt(s.planted,10)||0); }, 0);
+}
+function addSpecies(){
+  var name = val("sp_name"), planted = val("sp_planted");
+  if (name === "__new__"){
+    msg("bad","Fill in the species details above and press Add it to my list first.");
+    return;
+  }
+  if (!name){ msg("bad","Choose the species first."); return; }
+  if (!planted || parseInt(planted,10) <= 0){
+    msg("bad","Enter how many of that species were planted."); return;
+  }
+  var own = speciesDetail(name);
+  species.push({ name:name, supplied:val("sp_supplied"), planted:planted,
+                 stock:val("sp_stock"), own: !!own });
+  set("sp_name",""); set("sp_supplied",""); set("sp_planted",""); set("sp_stock","");
+  render(); spacingCalc();
+}
+function delSpecies(i){ species.splice(i,1); render(); spacingCalc(); }
+
+/* ------------------------------------------------------------ save event */
+function saveEvent(){
+  var need = [["event_code","the event code"],["site_name","the site name"],
+              ["district","the district"],["season","the season"],
+              ["planting_date","the planting date"],["spacing","the spacing"]];
+  for (var i=0;i<need.length;i++){
+    if (!val(need[i][0])){ msg("bad","Enter " + need[i][1] + " before saving."); return; }
+  }
+  if (!species.length){
+    msg("bad","Add at least one species. A planting with no species holds no trees, and "
+      + "would arrive at the district office showing nothing planted.");
+    return;
+  }
+  var base = {};
+  CFG.headers.forEach(function(h){ base[h] = ""; });
+  ["event_code","event_name","site_name","district","ward_number","season","group_name",
+   "officer_name","planting_date","planting_purpose","spacing","participants_total",
+   "participants_female","participants_youth","participants_disability",
+   "latitude","longitude","notes"]
+    .forEach(function(k){ base[k] = val(k); });
+  base.area_planted_ha = "";           // computed by the registry
+  var rows = species.map(function(s){
+    var r = {}; CFG.headers.forEach(function(h){ r[h] = base[h]; });
+    r.species_scientific_name = s.name;
+    var d = speciesDetail(s.name);
+    if (d){
+      // Only for a species this telephone added. The office reads these four
+      // columns when the name is not already on its list, and ignores them when
+      // it is, so a known species is never altered by what a telephone says.
+      r.species_common_name = d.common_name || "";
+      r.species_local_name = d.local_name || "";
+      r.species_origin = d.origin || "";
+      r.species_category = d.category || "";
+      if (d.note) r.notes = (r.notes ? r.notes + "  " : "") + "Species note: " + d.note;
+    }
+    r.seedlings_supplied = s.supplied;
+    r.seedlings_planted = s.planted;
+    r.stock_type = s.stock;
+    return r;
+  });
+  store.events.push({ id: Date.now(), code: base.event_code, name: base.event_name,
+    site: base.site_name, district: base.district, date: base.planting_date,
+    trees: treeTotal(), rows: rows });
+  ["district","ward_number","season","officer_name","site_name","group_name"]
+    .forEach(function(k){ store.last[k] = val(k); });
+  save();
+  var kept = { district:val("district"), ward_number:val("ward_number"),
+    season:val("season"), officer_name:val("officer_name") };
+  ["event_code","event_name","site_name","group_name","spacing","participants_total",
+   "participants_female","participants_youth","participants_disability",
+   "latitude","longitude","notes"]
+    .forEach(function(k){ set(k,""); });
+  species = [];
+  set("district",kept.district); set("ward_number",kept.ward_number);
+  set("season",kept.season); set("officer_name",kept.officer_name);
+  document.getElementById("gpsOut").innerHTML = "";
+  document.getElementById("gpsMsg").textContent = "";
+  render(); spacingCalc();
+  msg("ok","Planting saved on this phone. " + store.events.length
+    + " planting(s) now held. Export them on the Saved tab.");
+}
+
+/* --------------------------------------------------------------- survival */
+
+function survivalCalc(){
+  var a = parseInt(val("as_assessed"),10), l = parseInt(val("as_alive"),10);
+  var el = document.getElementById("as_calc");
+  if (isNaN(a) || isNaN(l) || a <= 0){ el.className = "gpsline"; el.textContent = ""; return; }
+  if (l > a){
+    el.className = "gpsline err";
+    el.textContent = "More trees alive than were examined. One of the two figures is wrong.";
+    return;
+  }
+  var pct = 100 * l / a;
+  el.className = "gpsline " + (pct < 50 ? "bad" : "good");
+  el.textContent = "Survival " + pct.toFixed(1) + " per cent, from " + l.toLocaleString()
+    + " alive of " + a.toLocaleString() + " examined.";
+}
+
+
+
+/* ------------------------------------------------------------ save point */
+function addPoint(){
+  var unit = val("bp_unit");
+  if (!unit){ msg("bad","Enter the forest unit code first."); return; }
+  var lat = val("bp_lat"), lon = val("bp_lon"), acc = val("bp_acc");
+  if (!lat || !lon){ msg("bad","A latitude and a longitude are required."); return; }
+  if (!acc){ msg("bad","The accuracy is required. A point that cannot be checked against "
+    + "the standard is refused by the registry."); return; }
+  if (parseFloat(acc) > CFG.limit){
+    msg("bad","That accuracy is " + acc + " m and the standard is " + CFG.limit
+      + " m or better. The point has not been saved.");
+    return;
+  }
+  var seq = val("bp_seq");
+  if (!seq){
+    var n = store.points.filter(function(p){ return p.unit === unit; }).length;
+    seq = String(n + 1);
+  }
+  store.points.push({ id: Date.now(), unit: unit, point_seq: seq,
+    point_label: val("bp_label"), latitude: lat, longitude: lon,
+    altitude_m: val("bp_alt"), gps_accuracy_m: acc, feature_note: val("bp_note"),
+    captured_on: new Date().toISOString().slice(0,10), captured_by: val("bp_by") });
+  store.last.bp_by = val("bp_by");
+  save();
+  ["bp_seq","bp_label","bp_lat","bp_lon","bp_alt","bp_acc","bp_note"].forEach(function(k){ set(k,""); });
+  document.getElementById("gpsOut2").innerHTML = "";
+  document.getElementById("gpsMsg2").textContent = "";
+  render();
+  msg("ok","Point saved. Walk on to the next change of direction.");
+}
+function delPoint(id){
+  store.points = store.points.filter(function(p){ return p.id !== id; });
+  save(); render();
+}
+function delEvent(id){
+  store.events = store.events.filter(function(e){ return e.id !== id; });
+  save(); render();
+}
+
+/* ------------------------------------------------------------------ view */
+function render(){
+  var t = treeTotal();
+  document.getElementById("treeTotal").textContent = t
+    ? t.toLocaleString() + " trees across " + species.length + " species"
+    : "No species added yet";
+  document.getElementById("spList").innerHTML = species.map(function(s,i){
+    return '<div class="sp"><span class="x" onclick="delSpecies(' + i + ')">&times;</span>'
+      + '<div class="n">' + s.name
+      + (s.own ? '<span class="new">added here</span>' : '') + '</div><div class="d">'
+      + parseInt(s.planted,10).toLocaleString() + ' planted'
+      + (s.supplied ? ", " + parseInt(s.supplied,10).toLocaleString() + " supplied" : "")
+      + (s.stock ? " &middot; " + s.stock : "") + '</div></div>';
+  }).join("");
+
+  var n = store.events.length;
+  document.getElementById("savedCount").textContent = n ? String(n) : "";
+  document.getElementById("savedList").innerHTML = n ? store.events.map(function(e){
+    return '<div class="saved"><div class="h">' + (e.name || e.code) + '</div>'
+      + '<div class="m">' + (e.name ? e.code + " &middot; " : "") + e.site + " &middot; "
+      + e.district + " &middot; " + e.date + '<br><span class="pill">'
+      + e.trees.toLocaleString() + ' trees</span> <span class="pill b">' + e.rows.length
+      + ' species</span></div>'
+      + '<button class="btn sm warn" onclick="delEvent(' + e.id + ')">Remove this planting</button>'
+      + '</div>';
+  }).join("") : '<div class="empty">Nothing saved yet.</div>';
+
+  // the picker offers whatever plantings this phone still holds
+
+  var sa = document.getElementById("savedAss");
+  if (sa) sa.innerHTML = store.assess.length
+    ? '<div class="saved"><div class="h">' + store.assess.length
+      + ' assessment(s)</div><div class="m">Covering '
+      + Object.keys(store.assess.reduce(function(o,x){ o[x.event_code]=1; return o; },{})).length
+      + ' planting(s).</div></div>'
+    : '<div class="empty">Nothing recorded yet.</div>';
+
+  var as = store.assess || [];
+  document.getElementById("survCount").textContent = as.length ? String(as.length) : "";
+  var alist = as.map(function(a){
+    var pct = a.trees_assessed ? Math.round(1000*a.trees_alive/a.trees_assessed)/10 : "";
+    return '<div class="sp"><span class="x" onclick="delAssess(' + a.id + ')">&times;</span>'
+      + '<div class="n">' + a.species_scientific_name + '</div>'
+      + '<div class="d">' + a.event_code + ' &middot; ' + a.assessment_date
+      + ' &middot; ' + a.months_after_planting + ' months<br>'
+      + a.trees_alive + ' of ' + a.trees_assessed + ' examined'
+      + (pct !== "" ? ' &middot; <b>' + pct + '%</b>' : '') + '</div></div>';
+  }).join("");
+  document.getElementById("assessList").innerHTML = alist
+    || '<div class="empty">Nothing recorded yet.</div>';
+  renderDue();
+  var nu = store.nurseries || [];
+  document.getElementById("nursCount").textContent = nu.length ? String(nu.length) : "";
+  document.getElementById("nursList").innerHTML = nu.length ? nu.map(function(n){
+    return '<div class="sp"><span class="x" onclick="delNursery(' + n.id + ')">&times;</span>'
+      + '<div class="n">' + n.name + '</div><div class="d">'
+      + (n.nursery_type ? n.nursery_type + " &middot; " : "") + n.district
+      + (n.ward_number ? ", ward " + n.ward_number : "")
+      + (n.annual_capacity ? "<br>capacity " + n.annual_capacity : "")
+      + (n.latitude ? " &middot; " + n.latitude + ", " + n.longitude : "")
+      + '</div></div>';
+  }).join("") : '<div class="empty">None recorded yet.</div>';
+  document.getElementById("savedNurs").innerHTML = nu.length
+    ? '<div class="saved"><div class="h">' + nu.length + ' nursery(ies)</div>'
+      + '<div class="m">Ready to export.</div></div>'
+    : '<div class="empty">No nurseries recorded.</div>';
+  var units = {};
+  store.points.forEach(function(p){ units[p.unit] = (units[p.unit]||0) + 1; });
+  var keys = Object.keys(units);
+  document.getElementById("savedPts").innerHTML = keys.length ? keys.map(function(u){
+    return '<div class="saved"><div class="h">' + u + '</div><div class="m"><span class="pill">'
+      + units[u] + ' point(s)</span>' + (units[u] < 3
+      ? ' &nbsp;Three or more are needed before an area can be computed.' : '')
+      + '</div></div>';
+  }).join("") : '<div class="empty">No points captured yet.</div>';
+
+  var cur = val("bp_unit");
+  var mine = store.points.filter(function(p){ return !cur || p.unit === cur; });
+  document.getElementById("bpTotal").textContent = mine.length
+    ? mine.length + " point(s) captured" + (cur ? " for " + cur : "")
+    : "No points captured";
+  document.getElementById("bpList").innerHTML = mine.length ? mine.map(function(p){
+    return '<div class="sp"><span class="x" onclick="delPoint(' + p.id + ')">&times;</span>'
+      + '<div class="n">' + p.point_seq + (p.point_label ? "  " + p.point_label : "") + '</div>'
+      + '<div class="d">' + p.latitude + ", " + p.longitude + " &middot; "
+      + p.gps_accuracy_m + " m" + (p.feature_note ? " &middot; " + p.feature_note : "")
+      + '</div></div>';
+  }).join("") : '<div class="empty">No points for this unit yet.</div>';
+}
+function showTab(which){
+  ["plant","bound","surv","nurs","saved"].forEach(function(k){
+    document.getElementById(k).classList.toggle("hide", k !== which);
+  });
+  document.getElementById("tabPlant").className = which === "plant" ? "on" : "";
+  document.getElementById("tabBound").className = which === "bound" ? "on" : "";
+  document.getElementById("tabSurv").className = which === "surv" ? "on" : "";
+  document.getElementById("tabNurs").className = which === "nurs" ? "on" : "";
+  document.getElementById("tabSaved").className = which === "saved" ? "on" : "";
+  document.querySelector(".foot").classList.toggle("hide", which !== "plant");
+  render();
+  window.scrollTo(0,0);
+}
+
+/* -------------------------------------------------------------- survival */
+/* The due list comes out of the registry as a comma separated file. Reading it
+   here means the officer identifies a planting by tapping it rather than by
+   typing an event code into a telephone in the sun, which is where mistakes are
+   made. Nothing is invented: the phone only ever repeats back what the registry
+   sent it. */
+function splitCsvLine(line){
+  var out = [], cur = "", q = false;
+  for (var i = 0; i < line.length; i++){
+    var ch = line[i];
+    if (q){
+      if (ch === '"'){ if (line[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ","){ out.push(cur); cur = ""; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+function parseCsv(text){
+  text = text.replace(/^\ufeff/, "").replace(/\r\n/g, "\n").trim();
+  var lines = text.split("\n").filter(function(l){ return l.trim().length; });
+  if (lines.length < 2) return [];
+  var head = splitCsvLine(lines[0]).map(function(h){ return h.trim().toLowerCase(); });
+  return lines.slice(1).map(function(l){
+    var c = splitCsvLine(l), o = {};
+    head.forEach(function(h, i){ o[h] = (c[i] || "").trim(); });
+    return o;
+  });
+}
+function loadDue(input){
+  var f = input.files && input.files[0];
+  var m = document.getElementById("dueMsg");
+  if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function(){
+    var rows;
+    try { rows = parseCsv(String(rd.result)); }
+    catch(e){ rows = []; }
+    var good = rows.filter(function(r){ return r.event_code && r.species; });
+    if (!good.length){
+      m.className = "gpsline err";
+      m.textContent = "Nothing was read from that file. It should be the report named "
+        + "Survival assessments due and overdue, downloaded as a CSV.";
+      return;
+    }
+    store.due = good.map(function(r, i){
+      return { i:i, event_code:r.event_code, species:r.species, site:r.site || "",
+        district:r.district || "", planted:r.planting_date || "",
+        seedlings: r.seedlings_planted || "", next_due:r.next_due || "",
+        next_round:r.next_round || "", late: parseInt(r.days_late || "0", 10) || 0 };
+    });
+    save();
+    m.className = "gpsline good";
+    m.textContent = store.due.length + " planting(s) read from the list.";
+    fillDueDistricts();
+    renderDue();
+  };
+  rd.readAsText(f);
+}
+function fillDueDistricts(){
+  var s = document.getElementById("dueDistrict");
+  var seen = {}, list = [];
+  (store.due || []).forEach(function(d){
+    if (d.district && !seen[d.district]){ seen[d.district] = 1; list.push(d.district); }
+  });
+  var keep = s.value;
+  s.innerHTML = "";
+  s.appendChild(new Option("All districts", ""));
+  list.sort().forEach(function(v){ s.appendChild(new Option(v, v)); });
+  if (keep) s.value = keep;
+}
+function doneKey(d){ return d.event_code + "||" + d.species; }
+function alreadyDone(d){
+  return (store.assess || []).some(function(a){
+    return a.event_code === d.event_code && a.species_scientific_name === d.species;
+  });
+}
+function renderDue(){
+  var host = document.getElementById("dueList");
+  var due = store.due || [];
+  if (!due.length){
+    host.innerHTML = '<div class="empty">No due list loaded. Bring one from the registry, '
+      + 'or record an assessment by typing it at the foot of this tab.</div>';
+    return;
+  }
+  var dist = document.getElementById("dueDistrict").value;
+  var mode = document.getElementById("dueFilter").value;
+  var rows = due.filter(function(d){
+    if (dist && d.district !== dist) return false;
+    if (mode === "late" && d.late <= 0) return false;
+    if (mode !== "all" && alreadyDone(d)) return false;
+    return true;
+  });
+  if (!rows.length){
+    host.innerHTML = '<div class="empty">Nothing matches. Change the filter above.</div>';
+    return;
+  }
+  host.innerHTML = rows.slice(0, 200).map(function(d){
+    var badge = d.late > 0
+      ? '<span class="pill" style="background:#fbeae7;color:#8f2317">' + d.late + ' days late</span>'
+      : '<span class="pill">due ' + (d.next_due || "") + '</span>';
+    var done = alreadyDone(d) ? ' <span class="pill b">recorded</span>' : '';
+    return '<div class="sp" onclick="openAssess(' + d.i + ')">'
+      + '<div class="n">' + d.species + '</div>'
+      + '<div class="d">' + d.event_code + (d.site ? " &middot; " + d.site : "")
+      + (d.seedlings ? " &middot; " + d.seedlings + " planted" : "")
+      + '<br>' + (d.next_round || "") + " " + badge + done + '</div></div>';
+  }).join("")
+  + (rows.length > 200 ? '<div class="empty">Showing the first 200. Filter by district.</div>' : "");
+}
+var assessing = null;
+function openAssess(i){
+  var d = (store.due || []).filter(function(x){ return x.i === i; })[0];
+  if (!d) return;
+  assessing = { event_code:d.event_code, species:d.species, seedlings:d.seedlings,
+                round:d.next_round, site:d.site };
+  document.getElementById("assessWho").textContent = d.species;
+  document.getElementById("assessDue").innerHTML =
+    "<b>" + d.event_code + "</b>" + (d.site ? " &middot; " + d.site : "")
+    + (d.planted ? "<br>Planted " + d.planted : "")
+    + (d.seedlings ? " &middot; " + d.seedlings + " seedlings planted" : "")
+    + (d.next_round ? "<br>" + d.next_round + " round"
+        + (d.late > 0 ? ", overdue by " + d.late + " days" : "") : "");
+  var mo = document.getElementById("as_months");
+  mo.value = /Twenty/.test(d.next_round) ? "24" : (/Twelve/.test(d.next_round) ? "12" : "3");
+  set("as_date", new Date().toISOString().slice(0,10));
+  set("as_assessed",""); set("as_alive",""); set("as_height","");
+  set("as_notes",""); set("as_cause","");
+  if (store.last.as_by) set("as_by", store.last.as_by);
+  document.getElementById("as_calc").textContent = "";
+  document.getElementById("assessCard").classList.remove("hide");
+  document.getElementById("dueListCard").classList.add("hide");
+  window.scrollTo(0,0);
+}
+function manualAssess(){
+  var code = prompt("Event code, exactly as in the registry");
+  if (!code) return;
+  var sp = prompt("Species scientific name, exactly as in the registry");
+  if (!sp) return;
+  assessing = { event_code:code.trim(), species:sp.trim(), seedlings:"", round:"", site:"" };
+  document.getElementById("assessWho").textContent = sp.trim();
+  document.getElementById("assessDue").innerHTML = "<b>" + code.trim() + "</b><br>"
+    + "Typed by hand. Both the code and the species must match the registry exactly or "
+    + "the row will be refused when the file is loaded.";
+  set("as_date", new Date().toISOString().slice(0,10));
+  set("as_assessed",""); set("as_alive","");
+  document.getElementById("as_calc").textContent = "";
+  document.getElementById("assessCard").classList.remove("hide");
+  document.getElementById("dueListCard").classList.add("hide");
+  showTab("surv");
+  window.scrollTo(0,0);
+}
+function closeAssess(){
+  assessing = null;
+  document.getElementById("assessCard").classList.add("hide");
+  document.getElementById("dueListCard").classList.remove("hide");
+}
+function survCalc(){
+  var a = parseInt(val("as_assessed"),10), b = parseInt(val("as_alive"),10);
+  var el = document.getElementById("as_calc");
+  if (!a || isNaN(b)){ el.textContent = ""; return; }
+  if (b > a){
+    el.className = "gpsline err";
+    el.textContent = "More alive than examined. One of the two figures is wrong.";
+    return;
+  }
+  var pct = Math.round(1000 * b / a) / 10;
+  el.className = "gpsline " + (pct < 50 ? "bad" : "good");
+  el.textContent = b + " of " + a + " examined is " + pct + " per cent survival."
+    + (assessing && assessing.seedlings && a < parseInt(assessing.seedlings,10)
+       ? "  This is a sample of the " + assessing.seedlings + " planted, which is correct "
+         + "where the whole planting was not counted." : "");
+}
+function saveAssessment(){
+  if (!assessing) return;
+  var a = parseInt(val("as_assessed"),10), b = parseInt(val("as_alive"),10);
+  if (!val("as_date")){ msg("bad","Enter the date of the assessment."); return; }
+  if (!a || a <= 0){ msg("bad","Enter how many trees you examined."); return; }
+  if (isNaN(b)){ msg("bad","Enter how many of those were alive."); return; }
+  if (b > a){ msg("bad","More trees alive than examined. Check both figures."); return; }
+  store.assess = store.assess || [];
+  store.assess.push({
+    id: Date.now(),
+    event_code: assessing.event_code,
+    species_scientific_name: assessing.species,
+    assessment_date: val("as_date"),
+    months_after_planting: val("as_months"),
+    trees_assessed: String(a),
+    trees_alive: String(b),
+    mean_height_cm: val("as_height"),
+    main_mortality_cause: val("as_cause"),
+    assessed_by: val("as_by"),
+    notes: val("as_notes"),
+    site: assessing.site
+  });
+  store.last.as_by = val("as_by");
+  save();
+  closeAssess();
+  fillDueDistricts();
+  render();
+  msg("ok", "Assessment saved. " + store.assess.length + " held on this phone.");
+}
+function delAssess(id){
+  store.assess = (store.assess || []).filter(function(a){ return a.id !== id; });
+  save(); render();
+}
+
+function exportAssess(){
+  var csv = buildAssessCsv();
+  if (!csv){ msg("bad","There are no assessments to export."); return; }
+  download(csv, "survival_assessments_" + stamp() + ".csv");
+  msg("ok","File saved to this phone. Load it on the Field data page of the registry, in the "
+    + "survival assessments section. Do not clear this phone until it has loaded.");
+}
+
+/* --------------------------------------------------------------- nursery */
+function saveNursery(){
+  var name = val("nu_name"), dist = val("nu_district");
+  if (!name){ msg("bad","Enter the name of the nursery."); return; }
+  if (!dist){ msg("bad","Choose the district."); return; }
+  var lat = val("nu_lat"), acc = val("nu_acc");
+  if (lat && !acc){
+    msg("bad","The accuracy is required where a position is given. A position that cannot be "
+      + "checked against the standard is refused by the registry.");
+    return;
+  }
+  if (lat && parseFloat(acc) > CFG.limit){
+    msg("bad","That accuracy is " + acc + " m and the standard is " + CFG.limit
+      + " m or better. Improve the reading or leave the position blank.");
+    return;
+  }
+  store.nurseries = store.nurseries || [];
+  store.nurseries.push({
+    id: Date.now(),
+    name: name,
+    nursery_type: val("nu_type"),
+    district: dist,
+    ward_number: val("nu_ward"),
+    operator: val("nu_operator"),
+    latitude: lat,
+    longitude: val("nu_lon"),
+    gps_accuracy_m: acc,
+    annual_capacity: val("nu_capacity"),
+    contact_person: val("nu_contact"),
+    phone: val("nu_phone"),
+    notes: val("nu_notes")
+  });
+  store.last.nu_district = dist;
+  save();
+  ["nu_name","nu_operator","nu_capacity","nu_contact","nu_phone","nu_lat","nu_lon",
+   "nu_acc","nu_notes","pasteBox3"].forEach(function(k){ set(k,""); });
+  var pm3 = document.getElementById("pasteMsg3");
+  if (pm3) pm3.textContent = "";
+  document.getElementById("gpsOut3").innerHTML = "";
+  document.getElementById("gpsMsg3").textContent = "";
+  render();
+  msg("ok","Nursery saved on this phone. " + store.nurseries.length + " held.");
+}
+function delNursery(id){
+  store.nurseries = (store.nurseries || []).filter(function(n){ return n.id !== id; });
+  save(); render();
+}
+function buildNurseryCsv(){
+  if (!store.nurseries || !store.nurseries.length) return null;
+  var lines = [CFG.nurseryHeaders.join(",")];
+  store.nurseries.forEach(function(n){
+    lines.push(CFG.nurseryHeaders.map(function(h){ return csvCell(n[h]); }).join(","));
+  });
+  return lines.join("\r\n") + "\r\n";
+}
+function exportNursery(){
+  var csv = buildNurseryCsv();
+  if (!csv){ msg("bad","There are no nurseries to export."); return; }
+  download(csv, "nurseries_" + stamp() + ".csv");
+  msg("ok","File saved to this phone. Load it on the Field data page of the registry, in the "
+    + "nurseries section. A nursery already on file is brought up to date rather than added "
+    + "twice.");
+}
+
+/* ---------------------------------------------------------------- export */
+function csvCell(v){
+  v = (v == null) ? "" : String(v);
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+}
+function buildPlantCsv(){
+  if (!store.events.length) return null;
+  var lines = [CFG.headers.join(",")];
+  store.events.forEach(function(e){
+    e.rows.forEach(function(r){
+      lines.push(CFG.headers.map(function(h){ return csvCell(r[h]); }).join(","));
+    });
+  });
+  return lines.join("\r\n") + "\r\n";
+}
+function buildPointCsv(){
+  if (!store.points.length) return null;
+  var lines = [["unit_code"].concat(CFG.pointHeaders).join(",")];
+  store.points.slice().sort(function(a,b){
+    return a.unit === b.unit ? (parseInt(a.point_seq,10) - parseInt(b.point_seq,10))
+                             : a.unit.localeCompare(b.unit);
+  }).forEach(function(p){
+    lines.push([csvCell(p.unit)].concat(CFG.pointHeaders.map(function(h){
+      return csvCell(p[h]); })).join(","));
+  });
+  return lines.join("\r\n") + "\r\n";
+}
+function buildAssessCsv(){
+  if (!store.assess.length) return null;
+  var lines = [CFG.assessHeaders.join(",")];
+  store.assess.forEach(function(x){
+    lines.push(CFG.assessHeaders.map(function(h){ return csvCell(x[h]); }).join(","));
+  });
+  return lines.join("\r\n") + "\r\n";
+}
+function exportAssess(){
+  var csv = buildAssessCsv();
+  if (!csv){ msg("bad","There are no assessments to export."); return; }
+  download(csv, "survival_assessments_" + stamp() + ".csv");
+  msg("ok","File saved to this phone. Load it on the Field data page of the registry, "
+    + "third section. Any row whose planting cannot be found will be named and refused, "
+    + "so read what the registry reports before clearing this phone.");
+}
+function stamp(){
+  var d = new Date(), z = function(n){ return (n<10?"0":"") + n; };
+  return d.getFullYear() + z(d.getMonth()+1) + z(d.getDate()) + "-" + z(d.getHours()) + z(d.getMinutes());
+}
+function download(text, name){
+  var blob = new Blob(["\ufeff" + text], {type:"text/csv;charset=utf-8;"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+}
+function exportPlant(){
+  var csv = buildPlantCsv();
+  if (!csv){ msg("bad","There are no plantings to export."); return; }
+  download(csv, "planting_records_" + stamp() + ".csv");
+  msg("ok","File saved to this phone, normally in Downloads. Load it on the Field data page "
+    + "of the registry, second section. Do not clear this phone until it has loaded.");
+}
+function exportPoints(){
+  var csv = buildPointCsv();
+  if (!csv){ msg("bad","There are no boundary points to export."); return; }
+  download(csv, "boundary_points_" + stamp() + ".csv");
+  msg("ok","File saved to this phone. On the Field data page, first section, choose the "
+    + "forest unit and load it. Delete the unit_code column first if the registry objects: "
+    + "the unit is chosen on the page, not read from the file.");
+}
+function shareFile(kind){
+  var csv = kind === "plant" ? buildPlantCsv()
+          : kind === "assess" ? buildAssessCsv()
+          : kind === "nursery" ? buildNurseryCsv() : buildPointCsv();
+  if (!csv){ msg("bad","There is nothing to share."); return; }
+  var name = (kind === "plant" ? "planting_records_"
+            : kind === "assess" ? "survival_assessments_"
+            : kind === "nursery" ? "nurseries_" : "boundary_points_")
+            + stamp() + ".csv";
+  var file;
+  try { file = new File(["\ufeff" + csv], name, {type:"text/csv"}); }
+  catch(e){ file = null; }
+  if (file && navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({ files:[file], title:name }).catch(function(){});
+  } else {
+    msg("info","This phone cannot share a file directly. Use the Download button instead, "
+      + "then attach the file from Downloads to a message.");
+  }
+}
+function clearAll(){
+  if (!confirm("Remove every planting, assessment and boundary point from this phone? "
+    + "Do this only after the files have been loaded into the registry.")) return;
+  if (!confirm("This cannot be undone. Continue?")) return;
+  store = { events:[], points:[], assess:[], last: store.last };
+  save(); species = []; render();
+  msg("ok","This phone has been cleared.");
+}
+
+document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("input", function(e){
+  if (e.target && e.target.id === "bp_unit") render();
+});
+</script>
+
+<script>
+/* Installed as an application, the form has an address that does not change, so
+   entries stay put, and it is served over https, so the telephone will give it a
+   position. Both field problems disappear at once. */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function (e) {
+      console.log("Offline support not available here:", e && e.message);
+    });
+  });
+}
+</script>
+</body>
+</html>
