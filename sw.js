@@ -15,7 +15,7 @@
  * the old form from their copy until this name changes, and nobody notices for
  * a season.
  */
-var CACHE = "trees-field-capture-v5.6";
+var CACHE = "trees-field-capture-v5.7";
 var FILES = [
   "./",
   "./index.html",
